@@ -1,0 +1,24 @@
+Record = zoho.crm.getRecordById("Quotes", QuoteID);
+	info Record; 
+	Proddata = Record.get("Product_Details"); 
+	AccountID = ifnull(Record.get("Account_Name").get("id"),""); 
+	
+	booksProdList = list();
+	for each row in Proddata{
+		Map = Map();
+		Map.put("name", row.get("product").get("name"));
+		Map.put("quantity", row.get("quantity"));
+		Map.put("rate",row.get("list_price"));
+		booksProdList.add(Map); 
+	}
+	info booksProdList; 
+	
+	BooksContactID = zoho.books.getRecords("Contacts", "855572821", "zcrm_account_id="+AccountID, "krishna1").get("contacts").get(0).get("contact_id");
+	info BooksContactID; 
+	
+	data = Map();
+	data.put("customer_id", BooksContactID); 
+	data.put("line_items", booksProdList); 
+	
+	Create = zoho.books.createRecord("Estimates", "855572821", data, "krishna1"); 
+	info Create; 
