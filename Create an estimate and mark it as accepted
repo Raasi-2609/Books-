@@ -1,0 +1,60 @@
+	Record = zoho.crm.getRecordById("Quotes", QuoteID);
+	info Record; 
+	Proddata = Record.get("Product_Details"); 
+	AccountID = ifnull(Record.get("Account_Name").get("id"),""); 
+	
+	booksProdList = list();
+	for each row in Proddata{
+		Map = Map();
+		Map.put("name", row.get("product").get("name"));
+		Map.put("quantity", row.get("quantity"));
+		Map.put("rate",row.get("list_price"));
+		booksProdList.add(Map); 
+	}
+	info booksProdList; 
+	
+	BooksContactID = zoho.books.getRecords("Contacts", "855572821", "zcrm_account_id="+AccountID, "krishna1").get("contacts").get(0).get("contact_id");
+	info BooksContactID; 
+	
+	data = Map();
+	data.put("customer_id", BooksContactID); 
+	data.put("line_items", booksProdList); 
+	
+	//custom field
+	customfield1 = map();
+	customfield1.put("api_name","cf_start_date" );
+	customfield1.put("value", Record.get("Start_Date")); 
+
+	customfield1 = map();
+	customfield1.put("api_name","cf_custom_text_field" );
+	customfield1.put("value", "custom added by function"); 
+
+	customfield2 = map();
+	customfield2.put("api_name","cf_custom_date" );
+	customfield2.put("value", "1999-03-09"); 
+
+	finallist = list();
+	finallist.add(customfield1);
+	finallist.add(customfield2); 
+	data.put("custom_fields",finallist); 
+	
+	Create = zoho.books.createRecord("Estimates", "855572821", data, "krishna1"); 
+	info Create; 
+	id = Create.get("estimate").get("estimate_id");
+	
+	//mark estimate as sent
+	sent = invokeUrl
+	[
+	url: "https://www.zohoapis.com/books/v3/estimates/"+id+"/status/sent?organization_id=855572821"
+	type: POST
+	connection: "krishna1"
+	];
+	info sent;
+	//mark estimate as sent
+	Accepted = invokeUrl
+	[
+	url: "https://www.zohoapis.com/books/v3/estimates/"+id+"/status/accepted?organization_id=855572821"
+	type: POST
+	connection: "krishna1"
+	];
+	info Accepted;
