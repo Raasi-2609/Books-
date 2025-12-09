@@ -1,0 +1,30 @@
+Estimateid = zoho.books.getRecords("Estimates", "XXX", "zcrm_potential_id="+DealID, "YYY").get("estimates").get(0).get("estimate_id"); 
+info Estimateid; 
+
+Getrecord = invokeUrl
+[
+url: "https://www.zohoapis.com/books/v3/estimates/"+Estimateid+"?organization_id=XXX"
+type: GET
+connection: "YYY"
+];
+info Getrecord;
+
+Line_Items = Getrecord.get("estimate").get("line_items"); 
+info Line_Items; 
+prodList = List(); 
+for each rec in Line_Items{
+
+	 prodmp = Map();
+	 prodmp.put("item_id",rec.get("item_id"));
+	 prodmp.put("name",rec.get("name"));
+	 prodmp.put("rate",rec.get("rate"));
+	 prodmp.put("quantity",rec.get("quantity"));
+	 prodList.add(prodmp);
+}
+customerid = zoho.books.getRecords("Contacts","XXX","zcrm_account_id=" + AcctID,"YYY").get("contacts").get(0).get("contact_id");
+mp = Map();
+mp.put("customer_id",customerid);
+mp.put("line_items",prodList);
+create = zoho.books.createRecord("Invoices","XXX",mp,"YYY");
+info mp;
+info create;
